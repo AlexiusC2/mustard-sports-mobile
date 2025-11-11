@@ -19,9 +19,8 @@ class MyHomePage extends StatelessWidget {
     return Scaffold(
       // AppBar adalah bagian atas halaman yang menampilkan judul.
       appBar: AppBar(
-        // Judul aplikasi "Football News" dengan teks putih dan tebal.
         title: const Text(
-          'Football News',
+          'Mustard Sports',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -63,7 +62,7 @@ class MyHomePage extends StatelessWidget {
                   const Padding(
                     padding: EdgeInsets.only(top: 16.0),
                     child: Text(
-                      'Selamat datang di Football News',
+                      'Selamat datang di Mustard Sports',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18.0,

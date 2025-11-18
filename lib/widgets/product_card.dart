@@ -25,7 +25,7 @@ class ItemCard extends StatelessWidget {
   // Function to handle logout
   Future<void> handleLogout(BuildContext context) async {
     final request = context.read<CookieRequest>();
-    final response = await request.logout("http://localhost:8000/auth/logout/");
+    final response = await request.logout("https://alexius-christhoper-mustardsports.pbp.cs.ui.ac.id/auth/logout/");
     String message = response["message"];
     if (context.mounted) {
       if (response['status']) {

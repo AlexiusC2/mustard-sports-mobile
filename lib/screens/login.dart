@@ -119,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                       Map<String, dynamic> response = {};
                       try {
                         response = await request.login(
-                          'http://localhost:8000/auth/login/',
+                          'https://alexius-christhoper-mustardsports.pbp.cs.ui.ac.id/auth/login/',
                           {
                             'username': username,
                             'password': password,

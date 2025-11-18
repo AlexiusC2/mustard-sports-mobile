@@ -134,7 +134,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         Map<String, dynamic> response = {};
                         try {
                           response = await request.postJson(
-                            'http://localhost:8000/auth/register/',
+                            'https://alexius-christhoper-mustardsports.pbp.cs.ui.ac.id/auth/register/',
                             jsonEncode({
                               'username': username,
                               'password1': password1,

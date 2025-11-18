@@ -224,7 +224,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                           try {
                             print('Sending data: name=$_name, price=$_price, category=$_category');
                             final response = await request.postJson(
-                              "http://localhost:8000/create-flutter/",
+                              "https://alexius-christhoper-mustardsports.pbp.cs.ui.ac.id/create-flutter/",
                               jsonEncode({
                                 "name": _name,
                                 "price": _price,

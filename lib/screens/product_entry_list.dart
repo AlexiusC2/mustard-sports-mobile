@@ -32,8 +32,8 @@ class _ProductEntryListPageState extends State<ProductEntryListPage> {
       
       // This endpoint returns products based on filter
       final url = _filter == 'all' 
-          ? 'http://localhost:8000/json/?filter=all'
-          : 'http://localhost:8000/json/';
+          ? 'https://alexius-christhoper-mustardsports.pbp.cs.ui.ac.id/json/?filter=all'
+          : 'https://alexius-christhoper-mustardsports.pbp.cs.ui.ac.id/json/';
       
       final response = await request.get(url);
       

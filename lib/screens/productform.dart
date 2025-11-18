@@ -1,5 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:mustard_sports/widgets/left_drawer.dart'; // Perbaiki path drawer
+import 'package:mustard_sports/widgets/left_drawer.dart';
+import 'package:mustard_sports/screens/menu.dart';
+import 'package:provider/provider.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
 
 class ProductFormPage extends StatefulWidget {
   const ProductFormPage({super.key});
@@ -29,15 +33,24 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
     return Scaffold(
+      backgroundColor: const Color(0xFFFFFBE6),
       appBar: AppBar(
-        title: const Center(
-          child: Text(
-            'Add New Product Form',
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.add_shopping_cart, color: Colors.black87),
+            const SizedBox(width: 8),
+            const Text(
+              'Add New Product',
+              style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
-        backgroundColor: Colors.blue, // Sesuaikan dengan tema Anda
-        foregroundColor: Colors.white,
+        backgroundColor: const Color(0xFFE6B800),
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.black87),
       ),
       // Tambahkan drawer yang sama di sini
       drawer: const LeftDrawer(),
@@ -197,49 +210,70 @@ class _ProductFormPageState extends State<ProductFormPage> {
                     padding: const EdgeInsets.all(8.0),
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: const Color(0xFFE6B800),
+                        foregroundColor: Colors.black87,
+                        minimumSize: const Size(double.infinity, 50),
+                        elevation: 2,
                       ),
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          // Tampilkan pop-up
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: const Text('Product successfully saved!'),
-                                content: SingleChildScrollView(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Name: $_name'),
-                                      Text('Price: $_price'),
-                                      Text('Description: $_description'),
-                                      Text('Thumbnail: $_thumbnail'),
-                    Text('Category: '
-                      '${_categories.firstWhere((e) => e.key == _category).value}'),
-                                      Text(
-                                          'Is Featured: ${_isFeatured ? "Yes" : "No"}'),
-                                    ],
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    child: const Text('OK'),
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                          // Reset form setelah save
-                          _formKey.currentState!.reset();
-                          setState(() {
-                            _category = "jersey";
-                            _isFeatured = false;
-                          });
+                          // TODO: Replace the URL with your app's URL
+                          // To connect Android emulator with Django on localhost, use URL http://10.0.2.2/
+                          // If you using chrome,  use URL http://localhost:8000
+                          
+                          try {
+                            print('Sending data: name=$_name, price=$_price, category=$_category');
+                            final response = await request.postJson(
+                              "http://localhost:8000/create-flutter/",
+                              jsonEncode({
+                                "name": _name,
+                                "price": _price,
+                                "description": _description,
+                                "thumbnail": _thumbnail,
+                                "category": _category,
+                                "is_featured": _isFeatured,
+                              }),
+                            );
+                            print('Response received: $response');
+                            if (context.mounted) {
+                              if (response['status'] == 'success') {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(const SnackBar(
+                                  content: Text("Product successfully saved!"),
+                                ));
+                                // Reset form
+                                _formKey.currentState!.reset();
+                                setState(() {
+                                  _name = "";
+                                  _price = 0;
+                                  _description = "";
+                                  _thumbnail = "";
+                                  _category = "lainnya";
+                                  _isFeatured = false;
+                                });
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => MyHomePage(
+                                        colorScheme: Theme.of(context).colorScheme,
+                                      )),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text("Failed: ${response['message'] ?? 'Unknown error'}"),
+                                ));
+                              }
+                            }
+                          } catch (e) {
+                            print('Error caught: $e');
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: Text("Error: $e"),
+                              ));
+                            }
+                          }
                         }
                       },
                       child: const Text(

@@ -10,9 +10,9 @@ class MyHomePage extends StatelessWidget {
   final String kelas = "B"; //kelas
 
   final List<ItemHomepage> items = [
-    ItemHomepage("All Products", Icons.list, Colors.blue),
-    ItemHomepage("My Products", Icons.person, Colors.green),
-    ItemHomepage("Create Product", Icons.add_box, Colors.red),
+    ItemHomepage("All Products", Icons.inventory_2, const Color(0xFFE6B800)),
+    ItemHomepage("My Products", Icons.person, const Color(0xFFFFC107)),
+    ItemHomepage("Create Product", Icons.add_shopping_cart, const Color(0xFFFF9800)),
   ];
 
   @override
@@ -21,18 +21,37 @@ class MyHomePage extends StatelessWidget {
     return Scaffold(
       // AppBar adalah bagian atas halaman yang menampilkan judul.
       appBar: AppBar(
-        title: const Text(
-          'Mustard Sports',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.sports_soccer, color: Colors.black87),
+            const SizedBox(width: 8),
+            const Text(
+              'Mustard Sports',
+              style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+          ],
         ),
-        // Warna latar belakang AppBar diambil dari skema warna tema aplikasi.
-        backgroundColor: Theme
-            .of(context)
-            .colorScheme
-            .primary,
+        centerTitle: true,
+        backgroundColor: const Color(0xFFE6B800),
+        elevation: 3,
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.logout, color: Colors.black87),
+              tooltip: 'Logout',
+              onPressed: () {
+                // Call logout from ItemCard
+                final logoutItem = ItemHomepage("Logout", Icons.logout, const Color(0xFFFF6B35));
+                ItemCard(logoutItem).handleLogout(context);
+              },
+            ),
+          ),
+        ],
       ),
       // Tambahkan drawer di sini
       drawer: const LeftDrawer(),
@@ -111,21 +130,33 @@ class InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      // Membuat kotak kartu dengan bayangan dibawahnya.
-      elevation: 2.0,
+      elevation: 3,
+      color: const Color(0xFFFFFBE6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: const Color(0xFFE6B800), width: 1),
+      ),
       child: Container(
-        // Mengatur ukuran dan jarak di dalam kartu.
-        width: MediaQuery.of(context).size.width / 3.5, // menyesuaikan dengan lebar device yang digunakan.
+        width: MediaQuery.of(context).size.width / 3.5,
         padding: const EdgeInsets.all(16.0),
-        // Menyusun title dan content secara vertikal.
         child: Column(
           children: [
             Text(
               title,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Color(0xFFE6B800),
+              ),
             ),
             const SizedBox(height: 8.0),
-            Text(content),
+            Text(
+              content,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ),

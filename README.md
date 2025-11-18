@@ -21,3 +21,34 @@
 4. Agar Flutter dapat berkomunikasi dengan Django di Android emulator, kita perlu menambahkan 10.0.2.2 ke ALLOWED_HOSTS karena alamat tersebut adalah cara emulator mengakses komputer host. Selain itu, Django harus mengaktifkan CORS agar Flutter (yang berjalan di lingkungan berbeda) diizinkan melakukan request lintas domain. Pengaturan SameSite dan cookie juga penting agar cookie session dapat dikirim balik ke Flutter selama proses login. Di sisi Android, izin akses internet harus ditambahkan dalam AndroidManifest.xml. Jika salah satu konfigurasi ini tidak dilakukan, aplikasi bisa gagal login, request diblokir oleh CORS, cookie tidak terkirim, atau bahkan Flutter tidak bisa mengakses server sama sekali.
 5. Data dikirim mulai dari input pengguna pada form Flutter. Setelah tombol submit ditekan, data tersebut dikemas dalam body POST dan dikirim ke Django melalui http atau CookieRequest. Django menerima data, memprosesnya (misalnya menyimpan ke database), lalu mengirimkan response dalam format JSON. Flutter menerima JSON tersebut, memetakannya ke model Dart, lalu menampilkan data yang sudah terstruktur tersebut pada UI.
 6. Ketika pengguna memasukkan data akun pada Flutter, data tersebut dikirim melalui CookieRequest ke endpoint Django (login, register). Django memverifikasi data, dan jika valid, Django membuat session dan mengembalikan cookie session tersebut. CookieRequest menyimpan cookie itu otomatis sehingga pada request berikutnya, Django mengenali pengguna sebagai user yang sudah login. Saat login berhasil, Flutter bisa menampilkan menu khusus pengguna. Mekanisme yang sama berlaku untuk register (menambah user baru), sedangkan logout akan menghapus session di Django dan menghapus cookie di CookieRequest, membuat pengguna kembali ke kondisi tidak login.
+7. Implementasi Checklist Step-by-Step
+   a. Persiapan Model dan Backend
+   Langkah pertama adalah memastikan model Product di main/models.py sudah lengkap dengan semua field yang dibutuhkan. Setelah itu, saya menggunakan tool konverter (Quicktype) untuk membuat model Dart yang identik di lib/models/product_entry.dart. Ini penting agar Flutter bisa mem-parsing JSON dengan tipe data yang benar dan null-safe.
+   
+   Sebelum membuat UI Flutter, saya terlebih dahulu menguji endpoint backend. Saya menyesuaikan view show_json di main/views.py untuk memastikan data JSON dapat diakses dengan benar. Saya membuka endpoint /json/ di browser untuk memverifikasi bahwa respons JSON muncul dengan struktur yang sesuai.
+   
+   b. Integrasi Fetch dan Display Data
+   Dengan API yang sudah berfungsi, saya mulai membuat UI Flutter. Saya membuat file lib/screens/product_entry_list.dart yang bertugas memanggil endpoint /json/ menggunakan CookieRequest.get(). Data JSON yang diterima diubah menjadi list objek ProductEntry melalui method fromJson. Untuk menampilkan setiap produk, saya membuat widget ProductEntryCard di lib/widgets/product_entry_card.dart yang menampilkan informasi produk dalam bentuk card.
+   
+   c. Implementasi Autentikasi
+   Agar aplikasi aman, saya membangun sistem autentikasi lengkap. Di sisi Django, saya membuat app authentication dengan tiga view: login, register, dan logout yang menerima request JSON dan mengembalikan response JSON. 
+   
+   Di sisi Flutter, saya membuat lib/screens/login.dart dan lib/screens/register.dart. Yang krusial adalah mengonfigurasi lib/main.dart untuk menggunakan Provider yang membungkus CookieRequest, sehingga instance cookie dapat dibagikan ke seluruh aplikasi. Untuk register, saya menggunakan request.postJson() agar body dikirim sebagai JSON. Untuk login, saya menggunakan request.login() yang secara otomatis menyimpan cookie sesi yang dikembalikan Django.
+   
+   Saya juga menambahkan tombol "Logout" di header AppBar yang memanggil fungsi handleLogout() di lib/widgets/product_card.dart, kemudian mengaturnya di lib/screens/menu.dart agar tombol muncul di pojok kanan atas.
+   
+   d. Fitur Create Product
+   Setelah login berfungsi, saya menambahkan fitur untuk menambah produk baru. Di Django, saya membuat view create_product_flutter di main/views.py, melindunginya dengan decorator @csrf_exempt dan @login_required, lalu mendaftarkannya ke path /create-flutter/.
+   
+   Di Flutter, saya membuat form lengkap di lib/screens/productform.dart dengan validasi untuk name, price, description, category, thumbnail, dan is_featured. Saat tombol "Save" ditekan, data dikirim menggunakan request.postJson() dengan body JSON. Karena CookieRequest sudah menyimpan cookie login, request ini otomatis membawa autentikasi dan berhasil melewati @login_required.
+   
+   e. Detail Product dan Filter My Products
+   Saya membuat halaman detail di lib/screens/product_detail.dart yang menampilkan semua atribut produk, termasuk userId dan username penjual. Namun, saat testing saya menemukan bug: field "Penjual" menampilkan "Tidak diketahui". Setelah investigasi, ternyata show_json di main/views.py tidak mengirim field user_username. Saya memperbaikinya dengan menambahkan field tersebut di serializer JSON.
+   
+   Dengan akses ke request.user di view Django, saya menyadari bisa menambahkan filter "My Products" dengan mudah. Saya menambahkan logika if request.GET.get('filter') == 'all' di view untuk membedakan antara menampilkan semua produk atau hanya produk user yang login. Di Flutter, saya memperbarui ProductEntryListPage agar menerima parameter initialFilter dan mengubah URL request sesuai filter yang dipilih.
+   
+   f. Penyesuaian Desain dengan Web Django
+   Saya menyesuaikan desain Flutter agar konsisten dengan web Django yang sudah ada sebelumnya. Saya menggunakan skema warna Mustard Sports (kuning emas #E6B800) di ColorScheme, AppBar, ElevatedButton, dan widget lainnya. Saya juga menata ulang menu utama dengan tiga tombol (All Products, My Products, Create Product) di tengah dan tombol Logout di pojok kanan atas AppBar.
+   
+   g. Testing dan Deployment
+   Untuk testing lokal, saya menggunakan URL http://localhost:8000 di semua endpoint agar bisa menjalankan Flutter di Chrome dan menguji fitur-fitur dengan Django development server. Setelah semua fitur berfungsi dengan baik, saya mengubah semua URL ke link PWS (https://alexius-christhoper-mustardsports.pbp.cs.ui.ac.id) sebelum commit dan push ke repository, sehingga aplikasi dapat diakses secara online. 
